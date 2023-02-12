@@ -1,0 +1,93 @@
+# Copyright 2023 Vasile Alexandru Gabriel <vasilealexandru37@gmail.com>
+
+Pentru aceasta tema am definit o structura in care retin formatul unei imagini,
+detaliile despre lungimea, latimea, valoarea maxima a intensitatii unei
+culori, matricile in care retin valorile pixelilor unei imagini si variabilele
+de selectie.
+
+Programul ruleaza cat timp utilizatorul nu introduce comanda EXIT, iar pentru
+fiecare comanda valida introdusa se apeleaza functiile corespunzatoare.
+
+Am creat un fisier special in care retin doar subprograme cu privire la alocari,
+eliberari de memorie si alte subprograme folosite pe parcursul editorului.
+
+Un alt fisier creat este cel care contine subprograme care verifica daca o
+comanda data de utilizator este valida sau nu, adica daca formatul este cel
+specificat in tema sau nu (returneaza 1 daca este valid si 0 daca nu este
+valid).
+
+Pentru operatia "LOAD" : Incepem prin a verifica daca fisierul introdus de
+utilizator este valid sau nu. Prin deschiderea sa incepem prin a citii datele
+despre imagine (format, lungime, latime, valoarea maxima a intensitatii unei
+culori) si valorile pixelilor si setam valorile default pentru variabilele
+de selectie.
+
+Pentru operatia "SELECT" : Extragem din comanda parametrii (coordonatele),
+verificam daca sunt valide si le pastram in memorie. (In struct am ales
+sa pastrez aceleasi nume ca in tema, pentru a fi mai usor de urmarit tema).
+
+Pentru operatia "SELECT ALL" : Pur si simplu pastram in memorie, in variabilele
+de selectie, dimensiunile imaginii incarcate.
+
+Pentru operatia "CROP" : Distingem doua cazuri diferite, unul pentru imagine
+de tip RGB si altul pentru imagine de tip grayscale. In ambele cazuri
+alocam memorie pentru o matrice auxiliara in care pastram doar pixelii din
+selectie. Eliberam memoria folosita pentru imaginea initiala, alocam iar
+memorie pentru noua matrice si copiem in el elementele din matricea auxiliara.
+La final dealocam memoria folosita pentru matricea auxliara si updatam selectia
+default (posibil sa se fi schimbat dimensiunile imaginii).
+
+Pentru operatia "APPLY" : Incepem prin a verifica daca filtrul dat de
+utilizator este valid (suportat de program) si daca imagine memorata este
+de tip RGB. Daca conditiile sunt respectate alocam memorie pentru o matrice
+auxiliara in care realizam aplicarea filtrului pe selectie. Pentru fiecare
+pixel din selectie verificam daca este pe margine (caz in care lasam neschimbat
+valoarea pixelului) sau nu. Pentru a aplica filtrul gasim cei 8 vecini ai
+pixelului si aplicam inmultirile necesare urmate de functia clamp si eventuale
+impartiri (la blur si gaussian blur).
+
+Pentru operatia "EQUALIZE" : Verificam daca imaginea din memorie este RGB
+caz in care afisam un mesaj de eroare. Gasim vectorul de frecventa a valorilor
+pixelilor si verificam daca alocarea a functionat corect. Parcurgem fiecare
+pixel din imagine si aplicam formula precizata in tema, precedata de
+functiile clamp si round.
+
+Pentru operatia "HISTOGRAM" : Verificam daca imaginea din memorie este de tip
+RGB caz in care afisam un mesaj de eroare. Gasim care este lungimea unui bin
+si vectorul de frecventa a valorilor pixelilor si verificam daca alocarea a
+functionat. Parcurgem fiecare interval din numarul de binuri, calculam
+suma frecventelor, din care extragem si maximul si dupa aplicam formula
+precizata in enuntul temei. Afisam in mod corespunzator formatul si eliberam
+memoria folosita in subprogram.
+
+Pentru operatia "ROTATE" : Verificam daca unghiul dat de utilizator este valid
+si daca nu afisam un mesaj de eroare. Distingem doua cazuri. Primul este atunci
+cand avem o selectie diferita de cea default, caz in care suntem constransi ca
+matricea sa fie patratica. Al doilea caz este cel in care selectia este default
+, adica operatia se aplica pe intreaga imagine. Pentru ambele cazuri, in
+rotirea imaginii, alegem o matrice auxiliara in care pastram elementele din
+matricea rotita pe care o calculam folosind formulele aferente de rotire.
+Observam ca pentru fiecare rotatie este suficient sa stabilim semnul unghiului
+si de cate ori se imparte la 90 de grade (de exemplu : pentru a roti o imagine
+cu 270 de grade, trebuie sa o rotim de 3 ori cu unghiul de 90 de grade).
+La final copiem elementele din matricea auxiliara in matricea noastra si
+eliberam memoria folosita in subprogram.
+
+Pentru operatia "SAVE" : Extragem parametrii din comanda introdusa de
+utilizator si afisam in formatul dorit, fie ascii, fie binar. Pentru
+ascii doar afisam valorile pixelilor din imagine, iar pentru binar
+ne folosim de o conversie la codul ascii pe care o stocam intr - o variabila
+de tip char si pe care o afisam in fisierul dorit (daca fisierul nu exista
+pur si simplu afisam un mesaj de eroare si iesim din program).
+
+Pentru operatia "EXIT" : Pentru aceasta operatie, eliberam absolut tot din
+memorie si iesim din program.
+
+Pentru programarea defensiva am ales o variabila pe care o transmit mereu ca
+parametru in functiile in care aloc sau realoc memorie pentru anumiti pointeri
+si care are valoarea 1 atunci cand o alocare sau realocare nu a functionat,
+moment in care eliberam memoria alocata pentru acea functie pana in acel
+moment, ne intoarcem in main unde eliberam absolut tot prin functia quit.
+Astfel dupa fiecare alocare/realocare verificam valoarea variabilei noastre si
+daca ceva nu a functionat realizam ceea ce am scris anterior si afisam un mesaj
+sugestiv.
